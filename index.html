@@ -43,14 +43,9 @@ class: center, middle
 
 # Asynkronitet
 
-- Asynkron programmering i Java?
-  - Når kan det passe?
-  - Hvilke verktøy har vi?
-  - Erfaringer?
-  - Utfordringer?
-
-- Eventdrevet programmering?
-  - Forskjell på asynkron programmering?
+ - Når kan asynkronitet hjelpe oss, og hva slags type problemer kan det hjelpe oss å løse? 
+ - Hvorfor bør vi bruke det?
+ - Hvilke utfordringer får vi ved asynkronitet?
 
 ---
 
@@ -99,45 +94,6 @@ complete|!hasNext()|onCompleted()
 ???
 You can think of the Observable class as a “push” equivalent to Iterable, which is a “pull.” 
 With an Iterable, the consumer pulls values from the producer and the thread blocks until those values arrive. By contrast, with an Observable the producer pushes values to the consumer whenever values are available. This approach is more flexible, because values can arrive synchronously or asynchronously.
-
----
-
-# Iterable (pull)
-
-```java
-getDataFromLocalMemory()
-  .skip(10)
-  .take(5)
-  .map({ s -> return s + " transformed" })
-  .forEach({ println "next => " + it })
-```
-
-# Observable (push)
-
-```java
-getDataFromNetwork()
-  .skip(10)
-  .take(5)
-  .map({ s -> return s + " transformed" })
-  .subscribe({ println "onNext => " + it })
-```
-
-???
-Mer fleksiblet på observable fordi data kan ankomme subscriber både asynkront og synkront
-
----
-
-# Observable
-
-- I Netflix sitt service-lag har alle metoder følgende signatur
-
-```java
-public Observable<T> getData();
-```
-
-- Synkront på tråden som kaller metoden?
-- Asynkront på en separat tråd?
-- Deler den arbeide utover flere tråder?
 
 ---
 
@@ -199,6 +155,32 @@ Observable.from(list)
 
 ---
 
+# Iterable (pull)
+
+```java
+getDataFromLocalMemory()
+  .skip(10)
+  .take(5)
+  .map({ s -> return s + " transformed" })
+  .forEach({ println "next => " + it })
+```
+
+# Observable (push)
+
+```java
+getDataFromNetwork()
+  .skip(10)
+  .take(5)
+  .map({ s -> return s + " transformed" })
+  .subscribe({ println "onNext => " + it })
+```
+
+???
+Mer fleksiblet på observable fordi data kan ankomme subscriber både asynkront og synkront
+
+---
+
+
 # Composing functions
 
 - Observables er alene ikke så veldig spennende
@@ -224,7 +206,7 @@ Observable.from(list)
 
 ---
 
-# merge
+# Merge
 
 <img src="http://reactivex.io/documentation/operators/images/merge.png" width="400"/>
 
@@ -240,21 +222,66 @@ Observable.merge(o1,o2)
 //1 2 3 4 5 6 7 8 9 10
 
 ```
+
 ---
+
+# Zip
+
+<img src="http://reactivex.io/documentation/operators/images/zip.o.png" width="400"/>
+
+
+```java
+List<Integer> list1 = asList(1,2,3,4,5);
+List<Integer> list2 = asList(6, 7, 8, 9, 10);
+
+Observable<Integer> o1 = Observable.from(list1);
+Observable<Integer> o2 = Observable.from(list2);
+
+Observable.zip(o1, o2, (v1, v2) -> v1 + v2)
+  .subscribe(v -> System.out.print(v + " "));
+//7 9 11 13 15
+
+```
+
+
+
+---
+
+class: center, middle
 
 # Schedulers
 
-- RxJava er default synkront.
-- Kjører default på én tråd (tråden som man subscriber fra)
+---
+
+# Observable
+
+- I Netflix sitt service-lag har alle metoder følgende signatur
+
+```java
+public Observable<T> getData();
+```
+
+- Synkront på tråden som kaller metoden?
+- Asynkront på en separat tråd?
+- Deler den arbeide utover flere tråder?
+
+---
+
+
+# Schedulers
+
+- RxJava er default synkront og eksekverer default på tråden som man subscriber fra
 - Kan konfigureres opp gjennom metodene:  
 
-- <i>observeOn(Scheduler s)</i>
-  - Instruerer Observable til å kalle <i>onNext</i>, <i>onError</i> og <i>onCompleted</i> på en spesifikk Scheduler.
+```java
+observeOn(Scheduler s)
+```
+Instruerer Observable til å kalle <i>onNext</i>, <i>onError</i> og <i>onCompleted</i> på en spesifikk Scheduler.
 
-- <i>subscribeOn(Scheduler s)</i> 
-  - Kontroller hvilken tråd/scheduler som kallet til <i>subscribe</i> skjer på
-
-- Eksempel i IntelliJ
+```java
+subscribeOn(Scheduler s)
+```
+Kontroller hvilken tråd/scheduler som kallet til <i>subscribe</i> skjer på
 
 ---
 
@@ -381,7 +408,7 @@ oauth.accessTokenSecret<your-secret>
 - https://github.com/ReactiveX/RxJava/wiki
 - http://reactivex.io/
 - https://dev.twitter.com/streaming/overview
-
+- http://twitter4j.org/en/index.html
 
 
     </textarea>

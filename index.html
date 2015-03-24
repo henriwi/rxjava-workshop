@@ -31,7 +31,7 @@ class: center, middle
 
 1. Asynkronitet, Eventer og Reaktiv programmering
 2. Intro til RxJava
-3. Workshop med RxJava og Twitter Stream API
+3. Case med RxJava og Twitter Stream API
 
 ---
 
@@ -146,9 +146,9 @@ public Observable<T> getData();
 - Opprette <i>Observable</i> med metoden <i>from</i>
 
 ```java
-List<Integer> list = new ArrayList<>(asList(1,2,3,4,5,6,7,8,9,10))
+List<Integer> list = asList(1,2,3,4,5,6,7,8,9,10);
 
-Observable.from(list)
+Observable.from(list);
 ```
 
 ---
@@ -162,7 +162,7 @@ public final static <T> Observable<T> create(OnSubscribe<T> f)
 ```
 
 ```java
-List<Integer> list = new ArrayList<>(asList(1,2,3,4,5,6,7,8,9,10))
+List<Integer> list = asList(1,2,3,4,5,6,7,8,9,10);
 
 Observable.create((subscriber) -> {
   try {
@@ -226,7 +226,7 @@ Observable.from(list)
 
 # merge
 
-<img src="img/merge.png" width="400"/>
+<img src="http://reactivex.io/documentation/operators/images/merge.png" width="400"/>
 
 
 ```java

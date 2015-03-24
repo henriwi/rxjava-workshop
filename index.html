@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Title</title>
+    <title>RxJava</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <style type="text/css">
       @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
@@ -14,6 +14,7 @@
         font-weight: normal;
       }
       .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }	
+      .remark-slide-number {display: none;}
     </style>
   </head>
   <body>
@@ -21,11 +22,339 @@
 
 class: center, middle
 
-# RxJava workshop
+# Asynkronitet
+## Stikkord: RxJava, Twitter
 
 ---
 
 # Agenda
+
+1. Asynkronitet, Eventer og Reaktiv programmering
+2. Intro til RxJava
+3. Workshop med RxJava og Twitter Stream API
+
+---
+
+class: center, middle
+
+# Asynkronitet, Eventer og Reaktiv programmering
+
+---
+
+# Asynkronitet
+
+- Asynkron programmering i Java?
+  - Når kan det passe?
+  - Hvilke verktøy har vi?
+  - Erfaringer?
+  - Utfordringer?
+
+- Eventdrevet programmering?
+  - Forskjell på asynkron programmering?
+
+---
+
+class: center, middle
+
+# RxJava
+
+---
+
+# RxJava
+
+<i>RxJava – Reactive Extensions for the JVM – a library for composing asynchronous and event-based programs using observable sequences for the Java VM.</i>
+
+- RxJava er en Java-implementasjon av Reactive Extensions
+- Utviklet av Netflix, og brukt mye i deres systemer
+
+---
+class: center, middle
+
+<img src="img/request-multi.png" width="600"/>
+
+---
+class: center, middle
+
+<img src="img/request-single.png" width="600"/>
+
+---
+
+# RxJava
+
+- Utvider Observer-pattern med støtte for å håndtere sekvenser av data og operasjoner på disse sekvensene
+- Abstraherer bort ting som lavnivå trådhåndtering, synkronisering osv.
+
+<img src="img/observables_rxjava.png"/>
+
+---
+
+# RxJava
+
+event|Iterable (pull)|Observable(push)
+-----|---------------|----------------
+retrieve data|T next()|onNext(T)
+discover error|throws <code>Exception</code>|onError(Exception)
+complete|!hasNext()|onCompleted()
+
+???
+You can think of the Observable class as a “push” equivalent to Iterable, which is a “pull.” 
+With an Iterable, the consumer pulls values from the producer and the thread blocks until those values arrive. By contrast, with an Observable the producer pushes values to the consumer whenever values are available. This approach is more flexible, because values can arrive synchronously or asynchronously.
+
+---
+
+# Iterable (pull)
+
+```java
+getDataFromLocalMemory()
+  .skip(10)
+  .take(5)
+  .map({ s -> return s + " transformed" })
+  .forEach({ println "next => " + it })
+```
+
+# Observable (push)
+
+```java
+getDataFromNetwork()
+  .skip(10)
+  .take(5)
+  .map({ s -> return s + " transformed" })
+  .subscribe({ println "onNext => " + it })
+```
+
+???
+Mer fleksiblet på observable fordi data kan ankomme subscriber både asynkront og synkront
+
+---
+
+# Observable
+
+- I Netflix sitt service-lag har alle metoder følgende signatur
+
+```java
+public Observable<T> getData();
+```
+
+- Synkront på tråden som kaller metoden?
+- Asynkront på en separat tråd?
+- Deler den arbeide utover flere tråder?
+
+---
+
+# Eksempler
+
+- Opprette <i>Observable</i> med metoden <i>from</i>
+
+```java
+List<Integer> list = new ArrayList<>(asList(1,2,3,4,5,6,7,8,9,10))
+
+Observable.from(list)
+```
+
+---
+
+# Eksempler
+
+- Opprette <i>Observable</i> med metoden <i>create</i>
+
+```java
+public final static <T> Observable<T> create(OnSubscribe<T> f)
+```
+
+```java
+List<Integer> list = new ArrayList<>(asList(1,2,3,4,5,6,7,8,9,10))
+
+Observable.create((subscriber) -> {
+  try {
+    list.forEach(v -> subscriber.onNext(v));
+    subscriber.onCompleted();
+  } catch (Exception e) {
+      subscriber.onError(e);
+  }  
+});
+```
+---
+
+# Subscribe på en observable
+
+```java
+public final Subscription subscribe(Action1<? super T> onNext,
+                     Action1<java.lang.Throwable> onError,
+                     Action0 onComplete)
+```
+
+```java
+Observable.from(list)
+  .subscribe(System.out::println);
+```
+
+```java
+Observable.from(list)
+  .subscribe(
+    System.out::println, 
+    e -> e.printStackTrace(),
+    () -> System.out.println("Completed")
+  );
+```
+
+---
+
+# Composing functions
+
+- Observables er alene ikke så veldig spennende
+- Den virkelig styrken kommer med "reactive extensions"
+  - Operasjoner som gjør at man kan transformere, kombinere og manipulere på sekvenser som en Observable emitter.
+  - map, filter, takeWhile, count, sample, takeLast+++
+- Husk at RxJava er lazy (som streams i Java 8)
+
+```java
+
+Observable.from(list)
+  .filter(v -> v % 2 == 0)
+  .map(v -> v * 2)
+  .subscribe(System.out::println)
+
+```
+
+---
+
+# Combining Observables
+
+- Mange operasjoner for å kombinere flere Observables
+
+---
+
+# merge
+
+<img src="img/merge.png" width="400"/>
+
+
+```java
+List<Integer> list1 = new ArrayList(asList(1,2,3,4,5));
+List<Integer> list2 = new ArrayList(asList(6,7,8,9,10));
+
+Observable<Integer> o1 = Observable.from(list1);
+Observable<Integer> o2 = Observable.from(list2);
+
+Observable.merge(o1,o2)
+//1 2 3 4 5 6 7 8 9 10
+
+```
+---
+
+# Schedulers
+
+- RxJava er default synkront.
+- Kjører default på én tråd (tråden som man subscriber fra)
+- Kan konfigureres opp gjennom metodene:  
+
+- <i>observeOn(Scheduler s)</i>
+  - Instruerer Observable til å kalle <i>onNext</i>, <i>onError</i> og <i>onCompleted</i> på en spesifikk Scheduler.
+
+- <i>subscribeOn(Scheduler s)</i> 
+  - Kontroller hvilken tråd/scheduler som kallet til <i>subscribe</i> skjer på
+
+- Eksempel i IntelliJ
+
+---
+
+# Schedulers
+
+Scheduler | purpose
+----------|--------
+Schedulers.computation( ) | meant for computational work such as event-loops and callback processing; do not use this scheduler for I/O (use Schedulers.io( ) instead)
+Schedulers.from(executor) | uses the specified Executor as a Scheduler
+Schedulers.immediate( ) | schedules work to begin immediately in the current thread
+Schedulers.io( ) | meant for I/O-bound work such as asynchronous performance of blocking I/O, this scheduler is backed by a thread-pool that will grow as needed; for ordinary computational work, switch to Schedulers.computation( )
+Schedulers.newThread( ) | creates a new thread for each unit of work
+Schedulers.trampoline( ) | queues work to begin on the current thread after any already-queued work
+
+---
+# Eksempel fra Netflix
+
+```java
+/**
+ * Non-blocking method that immediately returns the value if available or 
+ * uses a thread to fetch the value and callback via `onNext()` when done. 
+ */
+def Observable<T> getData(int id) {
+    if(availableInMemory) {
+        // if data available return immediately with data
+        return Observable.create({ observer ->
+            observer.onNext(valueFromMemory);
+            observer.onCompleted();
+        })
+    } else {
+        // else spawn thread or async IO to fetch data
+        return Observable.create({ observer ->
+            executor.submit({
+                try {
+                    // do work on separate thread
+                    T value = getValueFromRemoteService(id);
+                    // callback with value
+                    observer.onNext(value);
+                    observer.onCompleted();
+                } catch(Exception e) {
+                    observer.onError(e);
+                }
+            })
+        });
+    }
+}
+```
+
+---
+# Backpressure
+
+- Hva hvis subscriber ikke klarer å håndtere alle data som observablen sender?
+- RxJava kommer med flere metoder for å håndtere backpressure
+
+---
+# Sample
+
+<img src="img/sample.png" width="600"/>
+
+```java
+Observable<Integer> burstySampled = bursty.sample(500, TimeUnit.MILLISECONDS);
+```
+
+---
+
+# Window
+
+<img src="img/window.png" width="600"/>
+
+```java
+Observable<Observable<Integer>> burstyWindowed = 
+  bursty.window(500, TimeUnit.MILLISECONDS);
+```
+
+---
+
+class: center, middle
+
+# Case: Twitter stream API
+
+---
+
+# Case
+
+https://github.com/henriwi/rxjava-workshop
+
+---
+
+# Case
+
+- Live stream over alle tweets/med en hashtag/keyword
+- Top 10 hashtags siste x minutter? (buffer, window)
+- Plott tweets på et kart live
+
+# Ressurser
+
+- https://github.com/ReactiveX/RxJava/wiki
+- http://reactivex.io/
+
+
 
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">

@@ -41,11 +41,18 @@ class: center, middle
 
 ---
 
-# Asynkronitet
+# Asynkronitet og eventer
 
- - Når kan asynkronitet hjelpe oss, og hva slags type problemer kan det hjelpe oss å løse? 
- - Hvorfor bør vi bruke det?
- - Hvilke utfordringer får vi ved asynkronitet?
+Diskutere i plenum
+
+- Når kan asynkronitet hjelpe oss, og hva slags type problemer kan det hjelpe oss å løse? 
+- Hvorfor bør vi bruke det?
+- Hvilke utfordringer får vi ved asynkronitet?
+- Hva slags erfaringer har vi med dette?
+
+
+- Når kan event-basert programmering være fornuftig?
+- Forskjell på asynkronitet og event-basert?
 
 ---
 
@@ -213,7 +220,6 @@ Mer fleksiblet på observable fordi data kan ankomme subscriber både asynkront 
 - Den virkelig styrken kommer med "reactive extensions"
   - Operasjoner som gjør at man kan transformere, kombinere og manipulere på sekvenser som en Observable emitter.
   - map, filter, takeWhile, count, sample, takeLast+++
-- Husk at RxJava er lazy (som streams i Java 8)
 
 ```java
 
@@ -433,6 +439,7 @@ oauth.accessTokenSecret<your-secret>
 
 
 - Kombinere flere twitter-streams?
+- Feilhåndtering?
 - Håndtere backpressure?
 - Bruke Schedulers?
 

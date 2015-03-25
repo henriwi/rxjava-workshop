@@ -97,9 +97,9 @@ With an Iterable, the consumer pulls values from the producer and the thread blo
 
 ---
 
-# Eksempler
+# Opprette
 
-- Opprette <i>Observable</i> med metoden <i>from</i>
+- Opprette <code>Observable</code> med metoden <code>from</code>
 
 ```java
 List<Integer> list = asList(1,2,3,4,5,6,7,8,9,10);
@@ -108,10 +108,22 @@ Observable.from(list);
 ```
 
 ---
+# Subscribe på en observable
 
-# Eksempler
+```java
+public final Subscription subscribe(Action1<? super T> onNext)
+```
 
-- Opprette <i>Observable</i> med metoden <i>create</i>
+```java
+Observable.from(list)
+  .subscribe(System.out::println);
+```
+
+---
+
+# Opprette
+
+- Opprette <code>Observable</code> med metoden <code>create</code>
 
 ```java
 public final static <T> Observable<T> create(OnSubscribe<T> f)
@@ -212,13 +224,13 @@ Observable.from(list)
 
 
 ```java
-List<Integer> list1 = new ArrayList(asList(1,2,3,4,5));
-List<Integer> list2 = new ArrayList(asList(6,7,8,9,10));
+List<Integer> list1 = asList(1,2,3,4,5);
+List<Integer> list2 = asList(6,7,8,9,10);
 
 Observable<Integer> o1 = Observable.from(list1);
 Observable<Integer> o2 = Observable.from(list2);
 
-Observable.merge(o1,o2)
+Observable.merge(o1,o2);
 //1 2 3 4 5 6 7 8 9 10
 
 ```
@@ -276,12 +288,12 @@ public Observable<T> getData();
 ```java
 observeOn(Scheduler s)
 ```
-Instruerer Observable til å kalle <i>onNext</i>, <i>onError</i> og <i>onCompleted</i> på en spesifikk Scheduler.
+Instruerer Observable til å kalle <code>onNext</code>, <code>onError</code> og <code>onCompleted</code> på en spesifikk Scheduler.
 
 ```java
 subscribeOn(Scheduler s)
 ```
-Kontroller hvilken tråd/scheduler som kallet til <i>subscribe</i> skjer på
+Kontroller hvilken tråd/scheduler som kallet til <code>subscribe</code> skjer på
 
 ---
 
@@ -386,7 +398,9 @@ Gå til https://apps.twitter.com
 
 Trykk "Create new app". Random navn + beskrivelse og "http://example.org" som url.
 
-Gå til "Keys and Access Tokens". "twitter4j.properties" i src/main/resources skal inneholder følgende:
+Gå til "Keys and Access Tokens". 
+
+<code>twitter4j.properties</cod> i <code>src/main/resources</code> skal inneholde følgende:
 
 ```
 oauth.consumerKey=<your-key>
@@ -401,7 +415,8 @@ oauth.accessTokenSecret<your-secret>
 
 - Live stream over alle tweets/med en hashtag/keyword
 - Top 10 hashtags siste x minutter? (buffer, window)
-- Plott tweets på et kart live
+- Visualisering av tweets på et kart
+
 
 - Kombinere flere twitter-streams?
 - Håndtere backpressure?
@@ -409,6 +424,8 @@ oauth.accessTokenSecret<your-secret>
 
 # Ressurser
 
+- https://github.com/henriwi/rxjava-workshop
+- http://henriwi.github.io/rxjava-workshop
 - https://github.com/ReactiveX/RxJava/wiki
 - http://reactivex.io/
 - https://dev.twitter.com/streaming/overview
